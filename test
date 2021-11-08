@@ -1,0 +1,51 @@
+import requests
+import pandas as pd
+
+import json
+Links =[]
+for i in range(2011,2022):
+    st = f'{i}-01-01'
+    end = f'{i}-12-31'
+    print(st)
+    payload = {
+    "program": "VCS",
+    "assetStatus": "ACTIVE",
+    "issuanceStartInclusive": st,
+    "issuanceEndInclusive": end
+    }
+    # payload = {
+    # "program": "VCS",
+    # "assetStatus": "ACTIVE",
+    # "issuanceStartInclusive": "2010-01-01",
+    # "issuanceEndInclusive": "2010-12-31"
+    # }
+
+
+    resp = requests.post('https://registry.verra.org/uiapi/asset/asset/search?maxResults=2000&$count=true&$orderby=&$skip=0&$top=50', json= payload)
+
+
+    element = json.loads(resp.text)
+    number = element['totalCount']
+    print(int(number))
+    for a in range(0,int(number),50):
+        print(a)
+        url = f'https://registry.verra.org/uiapi/asset/asset/search?maxResults=2000&$count=true&$orderby=&$skip={a}&$top=50'
+        resp = requests.post(url, json= payload)
+
+        print(resp)
+        element = json.loads(resp.text)
+
+
+        for i in element['value']:
+            Links.append("https://registry.verra.org/app/projectDetail/VCS/" +(i['resourceIdentifier']))
+
+
+
+
+
+    df = pd.DataFrame(Links,columns=['LInks'])
+    print(df)
+
+    df.to_csv(r'./Links.csv', index=False, mode = 'a')
+    Links.clear()
+# df.to_excel(r'./libk.xlsx', index=False)
